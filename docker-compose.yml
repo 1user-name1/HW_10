@@ -1,0 +1,29 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  service-a:
+    build: ./service_a
+    ports:
+      - "8000:8000"
+    environment:
+      RABBIT_HOST: rabbitmq
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  service-b:
+    build: ./service_b
+    environment:
+      RABBIT_HOST: rabbitmq
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
